@@ -1,7 +1,7 @@
 import { handleOptions } from '../_shared/cors.ts';
 import { jsonOk, jsonError } from '../_shared/json.ts';
 import { ErrorCodes } from '../_shared/errors.ts';
-import { requireAdmin, getSupabaseAdminClient } from '../_shared/auth.ts';
+import { getSupabaseAdminClient } from '../_shared/auth.ts';
 import { checkRateLimit, getRateLimitKey, extractClientIdentifier, rateLimitResponse } from '../_shared/rateLimit.ts';
 
 Deno.serve(async (req) => {
@@ -13,10 +13,7 @@ Deno.serve(async (req) => {
     return jsonError(405, 'method_not_allowed', 'Only GET is allowed');
   }
 
-  const { user, response: authErr } = await requireAdmin(req);
-  if (authErr) return authErr;
-
-  const clientId = extractClientIdentifier(req, user.id);
+  const clientId = extractClientIdentifier(req);
   const rlKey = getRateLimitKey('admin-pins', clientId);
   if (!checkRateLimit(rlKey, { maxRequests: 120, windowMs: 3_600_000 })) {
     return rateLimitResponse();

@@ -1,7 +1,7 @@
 import { jsonOk, jsonError } from '../_shared/json.ts';
 import { ErrorCodes } from '../_shared/errors.ts';
 import { safeJson } from '../_shared/validators.ts';
-import { requireAdmin, getSupabaseAdminClient } from '../_shared/auth.ts';
+import { getSupabaseAdminClient } from '../_shared/auth.ts';
 import { checkRateLimit, RATE_LIMITS, getRateLimitKey, extractClientIdentifier, rateLimitResponse } from '../_shared/rateLimit.ts';
 
 Deno.serve(async (req) => {
@@ -13,10 +13,7 @@ Deno.serve(async (req) => {
     return jsonError(405, 'method_not_allowed', 'Only POST is allowed');
   }
 
-  const { user, response: authErr } = await requireAdmin(req);
-  if (authErr) return authErr;
-
-  const clientId = extractClientIdentifier(req, user.id);
+  const clientId = extractClientIdentifier(req);
   const rlKey = getRateLimitKey('admin-pins-review', clientId);
   if (!checkRateLimit(rlKey, RATE_LIMITS['admin-pins-review'])) {
     return rateLimitResponse();
@@ -47,7 +44,7 @@ Deno.serve(async (req) => {
     p_pin_id: pinId,
     p_action: action,
     p_reason: reason,
-    p_admin_id: user.id,
+    p_admin_id: null,
   });
 
   if (rpcErr) {

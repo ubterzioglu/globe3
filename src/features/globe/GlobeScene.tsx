@@ -2,12 +2,10 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 import * as THREE from 'three';
 import {
   EARTH_RADIUS,
-  CLOUD_RADIUS,
   ATMOSPHERE_RADIUS,
   CAMERA_DISTANCE,
   CAMERA_FOV,
   EARTH_TEXTURE_DAY,
-  EARTH_TEXTURE_CLOUDS,
   AUTO_ROTATION_SPEED,
   ZOOM_MIN,
   ZOOM_MAX,
@@ -30,7 +28,6 @@ export function GlobeScene({ pins, targetRotation, onFlyComplete }: GlobeScenePr
     camera: THREE.PerspectiveCamera;
     renderer: THREE.WebGLRenderer;
     earth: THREE.Mesh;
-    clouds: THREE.Mesh | null;
     animationId: number;
   } | null>(null);
 
@@ -94,29 +91,11 @@ export function GlobeScene({ pins, targetRotation, onFlyComplete }: GlobeScenePr
       () => {},
     );
 
-    let clouds: THREE.Mesh | null = null;
-    textureLoader.load(
-      EARTH_TEXTURE_CLOUDS,
-      (cloudTexture) => {
-        const cloudGeometry = new THREE.SphereGeometry(CLOUD_RADIUS, 64, 64);
-        const cloudMaterial = new THREE.MeshStandardMaterial({
-          map: cloudTexture,
-          transparent: true,
-          opacity: 0.3,
-          depthWrite: false,
-        });
-        clouds = new THREE.Mesh(cloudGeometry, cloudMaterial);
-        scene.add(clouds);
-      },
-      undefined,
-      () => {},
-    );
-
     const atmosphereGeometry = new THREE.SphereGeometry(ATMOSPHERE_RADIUS, 64, 64);
     const atmosphereMaterial = new THREE.MeshBasicMaterial({
       color: 0x4f8cff,
       transparent: true,
-      opacity: 0.06,
+      opacity: 0.045,
       side: THREE.BackSide,
     });
     const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
@@ -127,7 +106,6 @@ export function GlobeScene({ pins, targetRotation, onFlyComplete }: GlobeScenePr
       camera,
       renderer,
       earth,
-      clouds,
       animationId: 0,
     };
 
@@ -152,11 +130,6 @@ export function GlobeScene({ pins, targetRotation, onFlyComplete }: GlobeScenePr
 
       ref.earth.rotation.x = rotationX.current;
       ref.earth.rotation.y = rotationY.current;
-
-      if (ref.clouds) {
-        ref.clouds.rotation.x = rotationX.current;
-        ref.clouds.rotation.y = rotationY.current + 0.0003;
-      }
 
       const diff = targetCameraDistance.current - cameraDistance.current;
       cameraDistance.current += diff * 0.05;

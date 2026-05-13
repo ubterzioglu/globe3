@@ -1,11 +1,9 @@
 export const EARTH_RADIUS = 1;
-export const CLOUD_RADIUS = 1.015;
 export const ATMOSPHERE_RADIUS = 1.2;
 export const CAMERA_DISTANCE = 2.8;
 export const CAMERA_FOV = 45;
 
 export const EARTH_TEXTURE_DAY = '/textures/earth/earth-day.jpg';
-export const EARTH_TEXTURE_CLOUDS = '/textures/earth/earth-clouds.png';
 export const EARTH_TEXTURE_NIGHT = '/textures/earth/earth-night.jpg';
 export const STARFIELD_TEXTURE = '/textures/earth/starfield.jpg';
 
