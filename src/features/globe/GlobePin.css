@@ -6,6 +6,11 @@
   cursor: pointer;
 }
 
+.globe-pin--selected,
+.globe-pin:focus-within {
+  z-index: 12;
+}
+
 .globe-pin__dot {
   width: 8px;
   height: 8px;
@@ -29,41 +34,56 @@
   z-index: 1;
 }
 
-.globe-pin__tooltip {
+.globe-pin__card {
   position: absolute;
-  bottom: calc(100% + 8px);
+  bottom: calc(100% + 10px);
   left: 50%;
   transform: translateX(-50%);
   background: rgba(15, 15, 35, 0.92);
   border: 1px solid rgba(79, 207, 143, 0.3);
-  border-radius: 8px;
-  padding: 8px 12px;
-  white-space: nowrap;
+  border-radius: 12px;
+  padding: 10px 12px;
+  width: min(220px, 42vw);
   z-index: 10;
-  pointer-events: none;
   backdrop-filter: blur(6px);
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.28);
 }
 
-.globe-pin__tooltip-name {
+.globe-pin__card-name {
   font-size: 13px;
   font-weight: 600;
   color: #e8f0ec;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
-.globe-pin__tooltip-meta {
+.globe-pin__card-meta {
   font-size: 11px;
   color: #8fa89a;
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 8px;
 }
 
-.globe-pin__tooltip-type {
+.globe-pin__card-type {
   color: #4fcf8f;
   font-weight: 500;
 }
 
-.globe-pin__tooltip-separator {
-  color: #4a5a50;
+.globe-pin__card-description {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #d2dbe1;
+  margin-bottom: 8px;
+}
+
+.globe-pin__card-date {
+  font-size: 11px;
+  color: #7b8a96;
+}
+
+@media (max-width: 768px) {
+  .globe-pin__card {
+    width: min(210px, 60vw);
+  }
 }

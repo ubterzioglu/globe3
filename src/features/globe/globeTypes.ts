@@ -2,6 +2,7 @@ export interface GlobePinItem {
   id: string;
   pinType: string;
   displayName: string;
+  description: string | null;
   city: string;
   country: string;
   countryCode: string | null;

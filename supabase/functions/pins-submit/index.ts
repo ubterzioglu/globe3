@@ -1,7 +1,7 @@
 import { jsonOk, jsonError } from '../_shared/json.ts';
 import { ErrorCodes } from '../_shared/errors.ts';
 import { safeJson, validatePinType, validateDisplayName, validateDescription, validatePlaceId } from '../_shared/validators.ts';
-import { requireUser, getSupabaseAdminClient } from '../_shared/auth.ts';
+import { getOptionalUser, getSupabaseAdminClient } from '../_shared/auth.ts';
 import { getPlaceDetails } from '../_shared/googlePlaces.ts';
 import { normalizeGooglePlace } from '../_shared/normalizePlace.ts';
 import { checkRateLimit, RATE_LIMITS, getRateLimitKey, extractClientIdentifier, rateLimitResponse } from '../_shared/rateLimit.ts';
@@ -25,10 +25,9 @@ Deno.serve(async (req) => {
     return jsonError(405, 'method_not_allowed', 'Only POST is allowed');
   }
 
-  const { user, response: authErr } = await requireUser(req);
-  if (authErr) return authErr;
+  const user = await getOptionalUser(req);
 
-  const clientId = extractClientIdentifier(req, user.id);
+  const clientId = extractClientIdentifier(req, user?.id);
   const rlKey = getRateLimitKey('pins-submit', clientId);
   if (!checkRateLimit(rlKey, RATE_LIMITS['pins-submit'])) {
     return rateLimitResponse();
@@ -77,7 +76,7 @@ Deno.serve(async (req) => {
   const { data: pin, error: insertErr } = await supabase
     .from('pins')
     .insert({
-      user_id: user.id,
+      user_id: user?.id ?? null,
       pin_type: body.pinType,
       display_name: body.displayName.trim(),
       description: body.description?.trim() || null,
@@ -103,7 +102,7 @@ Deno.serve(async (req) => {
 
   await supabase.from('pin_moderation_events').insert({
     pin_id: pin.id,
-    actor_user_id: user.id,
+    actor_user_id: user?.id ?? null,
     event_type: 'submitted',
     meta: { place: normalizedPlace },
   });
@@ -113,6 +112,7 @@ Deno.serve(async (req) => {
       id: pin.id,
       pinType: pin.pin_type,
       displayName: pin.display_name,
+      description: pin.description,
       city: pin.city,
       country: pin.country,
       countryCode: pin.country_code,

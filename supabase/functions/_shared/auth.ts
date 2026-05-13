@@ -33,6 +33,23 @@ export async function requireUser(req: Request): Promise<{ user: { id: string; e
   return { user: data.user };
 }
 
+export async function getOptionalUser(req: Request): Promise<{ id: string; email?: string } | null> {
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) return null;
+
+  const token = authHeader.replace('Bearer ', '').trim();
+  if (!token) return null;
+
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase.auth.getUser(token);
+
+  if (error || !data.user) {
+    return null;
+  }
+
+  return data.user;
+}
+
 export async function requireAdmin(req: Request): Promise<{ user: { id: string; email?: string; role?: string }; response?: Response }> {
   const result = await requireUser(req);
   if (result.response) return result as { user: { id: string; email?: string; role?: string }; response: Response };

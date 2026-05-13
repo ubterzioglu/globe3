@@ -10,6 +10,8 @@ interface ProjectedPin {
   x: number;
   y: number;
   visible: boolean;
+  baseX: number;
+  baseY: number;
 }
 
 interface GlobeOverlayLayerProps {
@@ -30,6 +32,7 @@ export function GlobeOverlayLayer({
   containerHeight,
 }: GlobeOverlayLayerProps) {
   const [projectedPins, setProjectedPins] = useState<ProjectedPin[]>([]);
+  const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
   const frameRef = useRef<number>(0);
 
   const projectPins = useCallback(() => {
@@ -50,7 +53,7 @@ export function GlobeOverlayLayer({
     const earthCenter = new THREE.Vector3(0, 0, 0);
     const toCamera = new THREE.Vector3().subVectors(camWorldPos, earthCenter).normalize();
 
-    const result: ProjectedPin[] = [];
+    const rawProjectedPins: ProjectedPin[] = [];
 
     for (const pin of pins) {
       const pos3D = latLngTo3D(pin.lat, pin.lng, EARTH_RADIUS + 0.005);
@@ -72,18 +75,18 @@ export function GlobeOverlayLayer({
       rotatedPos.z = -rx * sinY + rz * cosY;
 
       const dotProduct = rotatedPos.dot(toCamera);
-      const visible = dotProduct > 0.05;
+      const visible = dotProduct > 0.015;
 
       const projected = rotatedPos.clone().project(camera);
 
       const x = projected.x * halfW + halfW;
       const y = -projected.y * halfH + halfH;
 
-      result.push({ pin, x, y, visible });
+      rawProjectedPins.push({ pin, x, y, visible, baseX: x, baseY: y });
     }
 
-    setProjectedPins(result);
-  }, [pins, camera, earthRotationX, earthRotationY, containerWidth, containerHeight]);
+    setProjectedPins(distributeProjectedPins(rawProjectedPins, selectedPinId));
+  }, [pins, camera, earthRotationX, earthRotationY, containerWidth, containerHeight, selectedPinId]);
 
   useEffect(() => {
     projectPins();
@@ -104,7 +107,7 @@ export function GlobeOverlayLayer({
   }, [projectPins]);
 
   return (
-    <div className="globe-overlay-layer">
+    <div className="globe-overlay-layer" onClick={() => setSelectedPinId(null)} role="presentation">
       {projectedPins.map((p) => (
         <GlobePin
           key={p.pin.id}
@@ -112,8 +115,58 @@ export function GlobeOverlayLayer({
           x={p.x}
           y={p.y}
           visible={p.visible}
+          selected={selectedPinId === p.pin.id}
+          onSelect={(pinId) => setSelectedPinId((current) => (current === pinId ? null : pinId))}
         />
       ))}
     </div>
   );
+}
+
+function distributeProjectedPins(
+  pins: ProjectedPin[],
+  selectedPinId: string | null,
+): ProjectedPin[] {
+  const visiblePins = pins.filter((pin) => pin.visible);
+  const hiddenPins = pins.filter((pin) => !pin.visible);
+  const assigned = new Set<string>();
+  const clusters: ProjectedPin[][] = [];
+  const threshold = 22;
+
+  for (const pin of visiblePins) {
+    if (assigned.has(pin.pin.id)) continue;
+
+    const cluster = visiblePins.filter((candidate) => {
+      if (assigned.has(candidate.pin.id)) return false;
+      return Math.hypot(candidate.baseX - pin.baseX, candidate.baseY - pin.baseY) <= threshold;
+    });
+
+    cluster.forEach((item) => assigned.add(item.pin.id));
+    clusters.push(cluster);
+  }
+
+  const adjusted = clusters.flatMap((cluster) => {
+    if (cluster.length <= 1) return cluster;
+
+    const anchor = (selectedPinId
+      ? cluster.find((item) => item.pin.id === selectedPinId) ?? cluster[0]
+      : cluster[0])!;
+
+    const others = cluster.filter((item) => item.pin.id !== anchor.pin.id);
+    const radius = Math.min(18 + cluster.length * 2, 34);
+
+    return [
+      anchor,
+      ...others.map((item, index) => {
+        const angle = (index / Math.max(others.length, 1)) * Math.PI * 2 - Math.PI / 2;
+        return {
+          ...item,
+          x: item.baseX + Math.cos(angle) * radius,
+          y: item.baseY + Math.sin(angle) * radius,
+        };
+      }),
+    ];
+  });
+
+  return [...adjusted, ...hiddenPins];
 }

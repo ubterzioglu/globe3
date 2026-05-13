@@ -20,7 +20,7 @@ export function useApprovedPins(): UseApprovedPinsResult {
 
     const { data, error: dbError } = await supabase
       .from('pins')
-      .select('id, pin_type, display_name, city, country, country_code, lat, lng, created_at')
+      .select('id, pin_type, display_name, description, city, country, country_code, lat, lng, created_at')
       .eq('status', 'approved')
       .eq('is_active', true)
       .order('created_at', { ascending: false });
@@ -36,6 +36,7 @@ export function useApprovedPins(): UseApprovedPinsResult {
       id: p.id as string,
       pinType: p.pin_type as string,
       displayName: p.display_name as string,
+      description: p.description as string | null,
       city: p.city as string,
       country: p.country as string,
       countryCode: p.country_code as string | null,

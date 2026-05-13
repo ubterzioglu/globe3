@@ -12,7 +12,7 @@ export type Database = {
       pins: {
         Row: {
           id: string;
-          user_id: string;
+          user_id: string | null;
           pin_type: string;
           display_name: string;
           description: string | null;
@@ -38,7 +38,7 @@ export type Database = {
         };
         Insert: {
           id?: string;
-          user_id: string;
+          user_id?: string | null;
           pin_type: string;
           display_name: string;
           description?: string | null;
@@ -64,7 +64,7 @@ export type Database = {
         };
         Update: {
           id?: string;
-          user_id?: string;
+          user_id?: string | null;
           pin_type?: string;
           display_name?: string;
           description?: string | null;

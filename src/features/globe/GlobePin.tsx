@@ -1,5 +1,6 @@
-import { useState } from 'react';
 import type { GlobePinItem } from './globeTypes';
+import { formatDate } from '@/lib/format';
+import { PIN_TYPE_LABELS } from '@/features/pins/types';
 import './GlobePin.css';
 
 interface GlobePinProps {
@@ -7,40 +8,37 @@ interface GlobePinProps {
   x: number;
   y: number;
   visible: boolean;
+  selected: boolean;
+  onSelect: (pinId: string) => void;
 }
 
-const PIN_TYPE_LABELS: Record<string, string> = {
-  person: 'Ki\u015fi',
-  business: '\u0130\u015fletme',
-  ngo: 'STK',
-  creator: '\u0130\u00e7erik \u00dcreticisi',
-  event: 'Etkinlik',
-};
-
-export function GlobePin({ pin, x, y, visible }: GlobePinProps) {
-  const [hovered, setHovered] = useState(false);
-
+export function GlobePin({ pin, x, y, visible, selected, onSelect }: GlobePinProps) {
   if (!visible) return null;
 
   return (
     <div
       className="globe-pin"
       style={{ left: x, top: y }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onClick={(e) => {
+        e.stopPropagation();
+        onSelect(pin.id);
+      }}
     >
       <div className="globe-pin__dot" />
       <div className="globe-pin__glow" />
-      {hovered && (
-        <div className="globe-pin__tooltip">
-          <div className="globe-pin__tooltip-name">{pin.displayName}</div>
-          <div className="globe-pin__tooltip-meta">
-            <span className="globe-pin__tooltip-type">
-              {PIN_TYPE_LABELS[pin.pinType] ?? pin.pinType}
+      {selected && (
+        <div className="globe-pin__card" role="dialog" aria-label={pin.displayName}>
+          <div className="globe-pin__card-name">{pin.displayName}</div>
+          <div className="globe-pin__card-meta">
+            <span className="globe-pin__card-type">
+              {PIN_TYPE_LABELS[pin.pinType as keyof typeof PIN_TYPE_LABELS] ?? pin.pinType}
             </span>
-            <span className="globe-pin__tooltip-separator">&middot;</span>
             <span>{pin.city}, {pin.country}</span>
           </div>
+          {pin.description && (
+            <div className="globe-pin__card-description">{pin.description}</div>
+          )}
+          <div className="globe-pin__card-date">{formatDate(pin.createdAt)}</div>
         </div>
       )}
     </div>
