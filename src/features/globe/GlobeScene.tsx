@@ -23,6 +23,7 @@ interface GlobeSceneProps {
 }
 
 export function GlobeScene({ pins, targetRotation, onFlyComplete }: GlobeSceneProps) {
+  const MAX_PITCH = Math.PI / 2.8;
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<{
     scene: THREE.Scene;
@@ -33,6 +34,7 @@ export function GlobeScene({ pins, targetRotation, onFlyComplete }: GlobeScenePr
     animationId: number;
   } | null>(null);
 
+  const rotationX = useRef(0);
   const rotationY = useRef(0);
   const autoRotate = useRef(true);
   const isDragging = useRef(false);
@@ -42,6 +44,7 @@ export function GlobeScene({ pins, targetRotation, onFlyComplete }: GlobeScenePr
 
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const [camera, setCamera] = useState<THREE.PerspectiveCamera | null>(null);
+  const [currentRotationX, setCurrentRotationX] = useState(0);
   const [currentRotationY, setCurrentRotationY] = useState(0);
 
   const init = useCallback(() => {
@@ -147,9 +150,11 @@ export function GlobeScene({ pins, targetRotation, onFlyComplete }: GlobeScenePr
         rotationY.current += AUTO_ROTATION_SPEED * 0.01;
       }
 
+      ref.earth.rotation.x = rotationX.current;
       ref.earth.rotation.y = rotationY.current;
 
       if (ref.clouds) {
+        ref.clouds.rotation.x = rotationX.current;
         ref.clouds.rotation.y = rotationY.current + 0.0003;
       }
 
@@ -161,6 +166,7 @@ export function GlobeScene({ pins, targetRotation, onFlyComplete }: GlobeScenePr
 
       sizeUpdateCounter++;
       if (sizeUpdateCounter % 3 === 0) {
+        setCurrentRotationX(rotationX.current);
         setCurrentRotationY(rotationY.current);
       }
     };
@@ -191,7 +197,9 @@ export function GlobeScene({ pins, targetRotation, onFlyComplete }: GlobeScenePr
       container.addEventListener('mousemove', (e: MouseEvent) => {
         if (!isDragging.current) return;
         const dx = e.clientX - previousMouse.current.x;
+        const dy = e.clientY - previousMouse.current.y;
         rotationY.current += dx * 0.005;
+        rotationX.current = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, rotationX.current + dy * 0.005));
         previousMouse.current = { x: e.clientX, y: e.clientY };
       });
 
@@ -224,7 +232,9 @@ export function GlobeScene({ pins, targetRotation, onFlyComplete }: GlobeScenePr
       container.addEventListener('touchmove', (e: TouchEvent) => {
         if (!isDragging.current || e.touches.length !== 1) return;
         const dx = e.touches[0]!.clientX - previousMouse.current.x;
+        const dy = e.touches[0]!.clientY - previousMouse.current.y;
         rotationY.current += dx * 0.005;
+        rotationX.current = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, rotationX.current + dy * 0.005));
         previousMouse.current = { x: e.touches[0]!.clientX, y: e.touches[0]!.clientY };
       });
 
@@ -248,7 +258,9 @@ export function GlobeScene({ pins, targetRotation, onFlyComplete }: GlobeScenePr
     if (!targetRotation || !sceneRef.current) return;
 
     const start = rotationY.current;
+    const startX = rotationX.current;
     const end = targetRotation.y;
+    const endX = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, targetRotation.x));
     const duration = 1500;
     const startTime = performance.now();
 
@@ -259,6 +271,7 @@ export function GlobeScene({ pins, targetRotation, onFlyComplete }: GlobeScenePr
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
 
+      rotationX.current = startX + (endX - startX) * eased;
       rotationY.current = start + (end - start) * eased;
 
       if (progress < 1) {
@@ -278,6 +291,7 @@ export function GlobeScene({ pins, targetRotation, onFlyComplete }: GlobeScenePr
       <GlobeOverlayLayer
         pins={pins}
         camera={camera}
+        earthRotationX={currentRotationX}
         earthRotationY={currentRotationY}
         containerWidth={containerSize.width}
         containerHeight={containerSize.height}

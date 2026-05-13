@@ -15,6 +15,7 @@ interface ProjectedPin {
 interface GlobeOverlayLayerProps {
   pins: GlobePinItem[];
   camera: THREE.PerspectiveCamera | null;
+  earthRotationX: number;
   earthRotationY: number;
   containerWidth: number;
   containerHeight: number;
@@ -23,6 +24,7 @@ interface GlobeOverlayLayerProps {
 export function GlobeOverlayLayer({
   pins,
   camera,
+  earthRotationX,
   earthRotationY,
   containerWidth,
   containerHeight,
@@ -54,8 +56,16 @@ export function GlobeOverlayLayer({
       const pos3D = latLngTo3D(pin.lat, pin.lng, EARTH_RADIUS + 0.005);
 
       const rotatedPos = pos3D.clone();
+      const cosX = Math.cos(earthRotationX);
+      const sinX = Math.sin(earthRotationX);
       const cosY = Math.cos(earthRotationY);
       const sinY = Math.sin(earthRotationY);
+
+      const py = rotatedPos.y;
+      const pz = rotatedPos.z;
+      rotatedPos.y = py * cosX - pz * sinX;
+      rotatedPos.z = py * sinX + pz * cosX;
+
       const rx = rotatedPos.x;
       const rz = rotatedPos.z;
       rotatedPos.x = rx * cosY + rz * sinY;
@@ -73,7 +83,7 @@ export function GlobeOverlayLayer({
     }
 
     setProjectedPins(result);
-  }, [pins, camera, earthRotationY, containerWidth, containerHeight]);
+  }, [pins, camera, earthRotationX, earthRotationY, containerWidth, containerHeight]);
 
   useEffect(() => {
     projectPins();
