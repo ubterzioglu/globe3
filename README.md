@@ -37,8 +37,8 @@ cp .env.example .env.local
 | Variable | Description |
 |----------|-------------|
 | `VITE_SUPABASE_URL` | Supabase project URL |
-| `VITE_SUPABASE_ANON_KEY` | Supabase anonymous key (public) |
-| `VITE_SUPABASE_FUNCTIONS_URL` | Edge Functions base URL |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable/anon key (public) |
+| `VITE_SENTRY_DSN` | Optional Sentry DSN |
 
 ### 3. Supabase
 
@@ -125,8 +125,20 @@ tests/
 1. Push code to repository
 2. Deploy Edge Functions: `npx supabase functions deploy <name>`
 3. Deploy frontend to Vercel/Netlify/Cloudflare Pages
-4. Set `VITE_*` environment variables in hosting provider
+4. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in hosting provider
 5. Verify `SECURITY_CHECKLIST.md` items
+
+### Vercel
+
+- Framework preset: `Vite`
+- Build command: `npm run build`
+- Output directory: `dist`
+- Environment variables:
+  - `VITE_SUPABASE_URL`
+  - `VITE_SUPABASE_PUBLISHABLE_KEY`
+  - `VITE_SENTRY_DSN` (optional)
+
+This repo includes a `vercel.json` rewrite so client-side routes like `/login` and `/admin/pins` resolve to `index.html`.
 
 ## Admin Setup
 
