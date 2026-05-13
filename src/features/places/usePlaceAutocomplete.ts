@@ -7,6 +7,8 @@ interface UsePlaceAutocompleteResult {
   loading: boolean;
   error: PlacesApiError | null;
   activeIndex: number;
+  hasQuery: boolean;
+  noResults: boolean;
   setActiveIndex: (i: number) => void;
 }
 
@@ -56,5 +58,8 @@ export function usePlaceAutocomplete(
     return () => clearTimeout(timer);
   }, [input, sessionToken, minLength, debounceMs, reset]);
 
-  return { items, loading, error, activeIndex, setActiveIndex };
+  const hasQuery = input.trim().length >= minLength;
+  const noResults = hasQuery && !loading && !error && items.length === 0;
+
+  return { items, loading, error, activeIndex, hasQuery, noResults, setActiveIndex };
 }

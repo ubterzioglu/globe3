@@ -10,6 +10,8 @@ interface ProjectedPin {
   x: number;
   y: number;
   visible: boolean;
+  interactive: boolean;
+  opacity: number;
   baseX: number;
   baseY: number;
 }
@@ -75,14 +77,16 @@ export function GlobeOverlayLayer({
       rotatedPos.z = -rx * sinY + rz * cosY;
 
       const dotProduct = rotatedPos.dot(toCamera);
-      const visible = dotProduct > 0.015;
+      const opacity = Math.max(0, Math.min(1, (dotProduct + 0.18) / 0.34));
+      const visible = opacity > 0.02;
+      const interactive = dotProduct > 0.035;
 
       const projected = rotatedPos.clone().project(camera);
 
       const x = projected.x * halfW + halfW;
       const y = -projected.y * halfH + halfH;
 
-      rawProjectedPins.push({ pin, x, y, visible, baseX: x, baseY: y });
+      rawProjectedPins.push({ pin, x, y, visible, interactive, opacity, baseX: x, baseY: y });
     }
 
     setProjectedPins(distributeProjectedPins(rawProjectedPins, selectedPinId));
@@ -115,6 +119,8 @@ export function GlobeOverlayLayer({
           x={p.x}
           y={p.y}
           visible={p.visible}
+          opacity={p.opacity}
+          interactive={p.interactive}
           selected={selectedPinId === p.pin.id}
           onSelect={(pinId) => setSelectedPinId((current) => (current === pinId ? null : pinId))}
         />

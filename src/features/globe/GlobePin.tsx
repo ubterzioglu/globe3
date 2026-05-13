@@ -8,24 +8,47 @@ interface GlobePinProps {
   x: number;
   y: number;
   visible: boolean;
+  opacity: number;
+  interactive: boolean;
   selected: boolean;
   onSelect: (pinId: string) => void;
 }
 
-export function GlobePin({ pin, x, y, visible, selected, onSelect }: GlobePinProps) {
+const PIN_EMOJIS: Record<string, string> = {
+  person: '🧑',
+  business: '🏪',
+  ngo: '🤝',
+  creator: '🎥',
+  event: '📍',
+};
+
+export function GlobePin({ pin, x, y, visible, opacity, interactive, selected, onSelect }: GlobePinProps) {
   if (!visible) return null;
 
   return (
     <div
-      className="globe-pin"
-      style={{ left: x, top: y }}
+      className={`globe-pin globe-pin--type-${pin.pinType} ${selected ? 'globe-pin--selected' : ''} ${pin.pinType === 'event' ? 'globe-pin--event' : ''}`}
+      style={{ left: x, top: y, opacity, pointerEvents: interactive ? 'auto' : 'none' }}
       onClick={(e) => {
         e.stopPropagation();
         onSelect(pin.id);
       }}
+      role="button"
+      tabIndex={interactive ? 0 : -1}
+      aria-label={`${pin.displayName}, ${pin.city}, ${pin.country}`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect(pin.id);
+        }
+      }}
     >
-      <div className="globe-pin__dot" />
+      <div className="globe-pin__pulse globe-pin__pulse--primary" />
+      {pin.pinType === 'event' && <div className="globe-pin__pulse globe-pin__pulse--secondary" />}
       <div className="globe-pin__glow" />
+      <div className="globe-pin__emoji" aria-hidden="true">
+        {PIN_EMOJIS[pin.pinType] ?? '📍'}
+      </div>
       {selected && (
         <div className="globe-pin__card" role="dialog" aria-label={pin.displayName}>
           <div className="globe-pin__card-name">{pin.displayName}</div>

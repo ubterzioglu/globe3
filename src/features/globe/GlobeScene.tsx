@@ -66,6 +66,9 @@ export function GlobeScene({ pins, targetRotation, onFlyComplete }: GlobeScenePr
     const ambientLight = new THREE.AmbientLight(0x404060, 1.5);
     scene.add(ambientLight);
 
+    scene.add(createStarLayer(900, 18, 0xffffff, 0.8, 0.04));
+    scene.add(createStarLayer(240, 24, 0x8fb9ff, 1.4, 0.06));
+
     const directionalLight = new THREE.DirectionalLight(0xffffff, 2.0);
     directionalLight.position.set(5, 3, 5);
     scene.add(directionalLight);
@@ -271,4 +274,31 @@ export function GlobeScene({ pins, targetRotation, onFlyComplete }: GlobeScenePr
       />
     </div>
   );
+}
+
+function createStarLayer(count: number, radius: number, color: number, size: number, opacity: number): THREE.Points {
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(count * 3);
+
+  for (let i = 0; i < count; i++) {
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    const r = radius + Math.random() * 8;
+    positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+    positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+    positions[i * 3 + 2] = r * Math.cos(phi);
+  }
+
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+  const material = new THREE.PointsMaterial({
+    color,
+    size,
+    sizeAttenuation: true,
+    transparent: true,
+    opacity,
+    depthWrite: false,
+  });
+
+  return new THREE.Points(geometry, material);
 }
