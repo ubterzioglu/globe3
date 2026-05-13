@@ -137,7 +137,7 @@ function distributeProjectedPins(
   const hiddenPins = pins.filter((pin) => !pin.visible);
   const assigned = new Set<string>();
   const clusters: ProjectedPin[][] = [];
-  const threshold = 22;
+  const threshold = 16;
 
   for (const pin of visiblePins) {
     if (assigned.has(pin.pin.id)) continue;
@@ -159,7 +159,7 @@ function distributeProjectedPins(
       : cluster[0])!;
 
     const others = cluster.filter((item) => item.pin.id !== anchor.pin.id);
-    const radius = Math.min(18 + cluster.length * 2, 34);
+    const radius = Math.min(10 + cluster.length * 1.5, 20);
 
     return [
       anchor,

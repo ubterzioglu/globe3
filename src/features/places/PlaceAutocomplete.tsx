@@ -32,8 +32,9 @@ export function PlaceAutocomplete({
   const [shake, setShake] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { items, loading, activeIndex, noResults, setActiveIndex } = usePlaceAutocomplete(input, sessionToken);
-  const { place: selectedPlace, error: detailsError, loadDetails } = usePlaceDetails();
+  const { items, loading, error: autocompleteError, activeIndex, noResults, runSearch, setActiveIndex } =
+    usePlaceAutocomplete(input, sessionToken);
+  const { place: selectedPlace, loading: detailsLoading, error: detailsError, loadDetails } = usePlaceDetails();
 
   const resetSession = useCallback(() => {
     setSessionToken(crypto.randomUUID());
@@ -54,14 +55,14 @@ export function PlaceAutocomplete({
         setInput(retainInputOnSelect ? place.label : '');
         resetSession();
       } else {
-        triggerInlineError(detailsError?.message ?? 'Sehir bilgisi alinamadi.');
+        triggerInlineError('Sehir bilgisi alinamadi.');
       }
     },
-    [loadDetails, sessionToken, onSelect, resetSession, retainInputOnSelect, triggerInlineError, detailsError],
+    [loadDetails, sessionToken, onSelect, resetSession, retainInputOnSelect, triggerInlineError],
   );
 
   const submitSelection = useCallback(async () => {
-    if (loading || disabled) return;
+    if (loading || detailsLoading || disabled) return;
 
     if (activeIndex >= 0 && items[activeIndex]) {
       await handleSelect(items[activeIndex]!);
@@ -78,8 +79,14 @@ export function PlaceAutocomplete({
       return;
     }
 
+    const searchedItems = await runSearch(input);
+    if (searchedItems.length > 0) {
+      await handleSelect(searchedItems[0]!);
+      return;
+    }
+
     triggerInlineError('Bu sehir henuz listede yok.');
-  }, [activeIndex, disabled, handleSelect, input, items, loading, triggerInlineError]);
+  }, [activeIndex, detailsLoading, disabled, handleSelect, input, items, loading, runSearch, triggerInlineError]);
 
   function handleKeyDown(e: KeyboardEvent) {
     if (e.key === 'ArrowDown') {
@@ -115,7 +122,7 @@ export function PlaceAutocomplete({
           onFocus={() => setBlurred(false)}
           onBlur={() => setBlurred(true)}
           autoComplete="off"
-          disabled={disabled}
+          disabled={disabled || detailsLoading}
           aria-label={placeholder}
         />
         {showSearchButton && (
@@ -124,14 +131,14 @@ export function PlaceAutocomplete({
             variant="secondary"
             className="place-autocomplete__button"
             onClick={() => void submitSelection()}
-            disabled={disabled || loading}
+            disabled={disabled || loading || detailsLoading}
             aria-label="Sehir ara"
           >
-            {loading ? '...' : submitButtonLabel}
+            {loading || detailsLoading ? '...' : submitButtonLabel}
           </Button>
         )}
       </div>
-      {loading && <span className="place-autocomplete__loading">...</span>}
+      {(loading || detailsLoading) && <span className="place-autocomplete__loading">...</span>}
       {!blurred && items.length > 0 && (
         <PlaceSuggestionList
           items={items}
@@ -144,7 +151,12 @@ export function PlaceAutocomplete({
           {inlineMessage}
         </div>
       )}
-      {!inlineMessage && noResults && (
+      {!inlineMessage && autocompleteError && (
+        <div className="place-autocomplete__feedback place-autocomplete__feedback--error">
+          {autocompleteError.message}
+        </div>
+      )}
+      {!inlineMessage && !autocompleteError && noResults && (
         <div className="place-autocomplete__feedback place-autocomplete__feedback--error">
           Bu sehir henuz listede yok.
         </div>

@@ -9,6 +9,7 @@ interface UsePlaceAutocompleteResult {
   activeIndex: number;
   hasQuery: boolean;
   noResults: boolean;
+  runSearch: (queryOverride?: string) => Promise<PlaceSuggestion[]>;
   setActiveIndex: (i: number) => void;
 }
 
@@ -30,6 +31,40 @@ export function usePlaceAutocomplete(
     setActiveIndex(-1);
   }, []);
 
+  const runSearch = useCallback(
+    async (queryOverride?: string) => {
+      const query = (queryOverride ?? input).trim();
+      if (query.length < minLength) {
+        reset();
+        return [];
+      }
+
+      const reqId = ++requestIdRef.current;
+      setLoading(true);
+      setError(null);
+
+      const result = await fetchPlaceSuggestions(query, sessionToken);
+
+      if (reqId !== requestIdRef.current) {
+        return [];
+      }
+
+      setLoading(false);
+      setActiveIndex(-1);
+
+      if (result.error) {
+        setError(result.error);
+        setItems([]);
+        return [];
+      }
+
+      const nextItems = result.data ?? [];
+      setItems(nextItems);
+      return nextItems;
+    },
+    [input, minLength, reset, sessionToken],
+  );
+
   useEffect(() => {
     if (input.trim().length < minLength) {
       reset();
@@ -37,29 +72,14 @@ export function usePlaceAutocomplete(
     }
 
     const timer = setTimeout(async () => {
-      const reqId = ++requestIdRef.current;
-      setLoading(true);
-      setError(null);
-
-      const result = await fetchPlaceSuggestions(input.trim(), sessionToken);
-
-      if (reqId !== requestIdRef.current) return;
-
-      setLoading(false);
-      if (result.error) {
-        setError(result.error);
-        setItems([]);
-      } else {
-        setItems(result.data ?? []);
-      }
-      setActiveIndex(-1);
+      await runSearch(input);
     }, debounceMs);
 
     return () => clearTimeout(timer);
-  }, [input, sessionToken, minLength, debounceMs, reset]);
+  }, [input, sessionToken, minLength, debounceMs, reset, runSearch]);
 
   const hasQuery = input.trim().length >= minLength;
   const noResults = hasQuery && !loading && !error && items.length === 0;
 
-  return { items, loading, error, activeIndex, hasQuery, noResults, setActiveIndex };
+  return { items, loading, error, activeIndex, hasQuery, noResults, runSearch, setActiveIndex };
 }
