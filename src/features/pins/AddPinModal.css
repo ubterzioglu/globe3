@@ -1,0 +1,8 @@
+.add-pin-modal__error {
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 79, 111, 0.1);
+  border-radius: var(--radius-sm);
+  color: var(--color-danger);
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+}

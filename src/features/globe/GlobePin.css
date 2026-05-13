@@ -1,0 +1,69 @@
+.globe-pin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  z-index: 5;
+  cursor: pointer;
+}
+
+.globe-pin__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4fcf8f;
+  box-shadow: 0 0 4px rgba(79, 207, 143, 0.6);
+  position: relative;
+  z-index: 2;
+}
+
+.globe-pin__glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(79, 207, 143, 0.35) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.globe-pin__tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 15, 35, 0.92);
+  border: 1px solid rgba(79, 207, 143, 0.3);
+  border-radius: 8px;
+  padding: 8px 12px;
+  white-space: nowrap;
+  z-index: 10;
+  pointer-events: none;
+  backdrop-filter: blur(6px);
+}
+
+.globe-pin__tooltip-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e8f0ec;
+  margin-bottom: 2px;
+}
+
+.globe-pin__tooltip-meta {
+  font-size: 11px;
+  color: #8fa89a;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.globe-pin__tooltip-type {
+  color: #4fcf8f;
+  font-weight: 500;
+}
+
+.globe-pin__tooltip-separator {
+  color: #4a5a50;
+}

@@ -1,0 +1,29 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.badge--success {
+  background: rgba(79, 207, 143, 0.15);
+  color: var(--color-success);
+}
+
+.badge--warning {
+  background: rgba(255, 192, 79, 0.15);
+  color: var(--color-warning);
+}
+
+.badge--danger {
+  background: rgba(255, 79, 111, 0.15);
+  color: var(--color-danger);
+}
+
+.badge--info {
+  background: rgba(79, 207, 255, 0.15);
+  color: var(--color-info);
+}
