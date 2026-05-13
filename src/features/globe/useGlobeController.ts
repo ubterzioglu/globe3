@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import type { FlyToCoordsInput, GlobeController } from './globeTypes';
+import { targetRotationFromLatLng } from './geometry';
 
 export function useGlobeController(): {
   targetRotation: { x: number; y: number } | null;
@@ -11,13 +12,7 @@ export function useGlobeController(): {
   const flyToCoords = useCallback((input: FlyToCoordsInput) => {
     if (animatingRef.current) return;
 
-    const phi = (90 - input.lat) * (Math.PI / 180);
-    const theta = (input.lng + 180) * (Math.PI / 180);
-
-    setTargetRotation({
-      x: phi - Math.PI / 2,
-      y: -theta + Math.PI,
-    });
+    setTargetRotation(targetRotationFromLatLng(input.lat, input.lng));
 
     animatingRef.current = true;
     setTimeout(() => {

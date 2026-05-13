@@ -30,10 +30,6 @@
 }
 
 .globe-page__panel-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
   margin-bottom: 0.9rem;
 }
 
@@ -78,13 +74,6 @@
 .globe-page__search-result {
   background: rgba(255, 255, 255, 0.05);
   color: var(--color-text-secondary);
-}
-
-.globe-page__submit-notice {
-  margin-top: 0.7rem;
-  background: rgba(79, 207, 143, 0.12);
-  border: 1px solid rgba(79, 207, 143, 0.2);
-  color: #bfe8cd;
 }
 
 .globe-page__filters {

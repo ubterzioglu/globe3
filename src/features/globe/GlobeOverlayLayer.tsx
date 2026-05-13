@@ -159,7 +159,7 @@ function distributeProjectedPins(
       : cluster[0])!;
 
     const others = cluster.filter((item) => item.pin.id !== anchor.pin.id);
-    const radius = Math.min(10 + cluster.length * 1.5, 20);
+    const radius = Math.min(8 + cluster.length * 1.2, 16);
 
     return [
       anchor,

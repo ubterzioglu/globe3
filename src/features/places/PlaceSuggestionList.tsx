@@ -17,6 +17,7 @@ export function PlaceSuggestionList({ items, activeIndex, onSelect }: PlaceSugge
           key={item.placeId}
           className={`suggestion-item ${i === activeIndex ? 'suggestion-item--active' : ''}`}
           role="option"
+          id={`suggestion-${i}`}
           aria-selected={i === activeIndex}
           onMouseDown={() => onSelect(item)}
         >

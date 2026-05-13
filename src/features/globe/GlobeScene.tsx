@@ -10,6 +10,7 @@ import {
   ZOOM_MIN,
   ZOOM_MAX,
 } from './globeVisualConfig';
+import { shortestAngleDelta } from './geometry';
 import type { GlobePinItem } from './globeTypes';
 import { GlobeOverlayLayer } from './GlobeOverlayLayer';
 import './GlobeScene.css';
@@ -233,10 +234,14 @@ export function GlobeScene({ pins, targetRotation, onFlyComplete }: GlobeScenePr
   useEffect(() => {
     if (!targetRotation || !sceneRef.current) return;
 
-    const start = rotationY.current;
     const startX = rotationX.current;
-    const end = targetRotation.y;
+    const startY = rotationY.current;
     const endX = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, targetRotation.x));
+    const endY = targetRotation.y;
+
+    const deltaY = shortestAngleDelta(startY, endY);
+    const actualEndY = startY + deltaY;
+
     const duration = 1500;
     const startTime = performance.now();
 
@@ -248,11 +253,12 @@ export function GlobeScene({ pins, targetRotation, onFlyComplete }: GlobeScenePr
       const eased = 1 - Math.pow(1 - progress, 3);
 
       rotationX.current = startX + (endX - startX) * eased;
-      rotationY.current = start + (end - start) * eased;
+      rotationY.current = startY + deltaY * eased;
 
       if (progress < 1) {
         requestAnimationFrame(animateFly);
       } else {
+        rotationY.current = actualEndY;
         setTimeout(() => { autoRotate.current = true; }, 2000);
         onFlyComplete?.();
       }

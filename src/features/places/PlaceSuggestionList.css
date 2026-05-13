@@ -17,24 +17,38 @@
 
 .suggestion-item {
   display: flex;
-  justify-content: space-between;
-  padding: 0.6rem 0.75rem;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0.65rem 0.75rem;
+  min-height: 48px;
   cursor: pointer;
-  gap: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
 }
 
 .suggestion-item:hover,
 .suggestion-item--active {
-  background: var(--color-surface);
+  background: rgba(79, 207, 143, 0.08);
+}
+
+.suggestion-item--active {
+  border-left: 3px solid var(--pin-accent, #4fcf8f);
+  padding-left: calc(0.75rem - 3px);
 }
 
 .suggestion-item__primary {
   font-size: 0.9rem;
-  color: var(--color-text);
+  font-weight: 500;
+  color: #e8f0ec;
+  line-height: 1.3;
 }
 
 .suggestion-item__secondary {
-  font-size: 0.8rem;
-  color: var(--color-text-secondary);
-  white-space: nowrap;
+  font-size: 0.78rem;
+  color: #8fa89a;
+  line-height: 1.3;
+  white-space: normal;
 }

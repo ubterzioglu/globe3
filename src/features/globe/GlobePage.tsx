@@ -3,11 +3,9 @@ import { useApprovedPins } from './useApprovedPins';
 import { GlobeScene } from './GlobeScene';
 import { useGlobeController } from './useGlobeController';
 import { PlaceAutocomplete } from '@/features/places/PlaceAutocomplete';
-import { AddPinModal } from '@/features/pins/AddPinModal';
 import type { NormalizedPlace } from '@/features/places/types';
 import type { PinType } from '@/features/pins/types';
 import { PIN_TYPE_LABELS } from '@/features/pins/types';
-import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { ErrorBox } from '@/components/ui/ErrorBox';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -26,8 +24,6 @@ export default function GlobePage() {
   const { pins, loading, error, refetch } = useApprovedPins();
   const { targetRotation, controller } = useGlobeController();
   const [selectedPlace, setSelectedPlace] = useState<NormalizedPlace | null>(null);
-  const [addPinOpen, setAddPinOpen] = useState(false);
-  const [submitNotice, setSubmitNotice] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<'all' | PinType>('all');
 
   const filteredPins = activeFilter === 'all'
@@ -62,11 +58,8 @@ export default function GlobePage() {
           <div>
             <div className="globe-page__eyebrow">CorteQS Diaspora Globe</div>
             <h1>Global Turk diasporasini sehir sehir kesfet.</h1>
-            <p>Bir sehir ara, globe'u o noktaya gotur ve yeni pinini moderasyon icin gonder.</p>
+            <p>Bir sehir ara ve globe'u o noktaya gotur.</p>
           </div>
-          <Button onClick={() => setAddPinOpen(true)} aria-label="Pin ekle">
-            Pin Ekle
-          </Button>
         </div>
 
         <div className="globe-page__search">
@@ -84,10 +77,6 @@ export default function GlobePage() {
           <div className="globe-page__search-result">
             Odaklanilan sehir: <strong>{selectedPlace.city}</strong>, {selectedPlace.country}
           </div>
-        )}
-
-        {submitNotice && (
-          <div className="globe-page__submit-notice">{submitNotice}</div>
         )}
 
         <div className="globe-page__filters" aria-label="Pin filtreleri">
@@ -117,15 +106,6 @@ export default function GlobePage() {
       </div>
 
       <GlobeScene pins={filteredPins} targetRotation={targetRotation} />
-
-      <AddPinModal
-        open={addPinOpen}
-        onClose={() => setAddPinOpen(false)}
-        onCreated={() => {
-          setSubmitNotice('Your pin was submitted and is now waiting for admin review.');
-          setAddPinOpen(false);
-        }}
-      />
 
       {filteredPins.length === 0 && (
         <div className="globe-page__empty-overlay">
