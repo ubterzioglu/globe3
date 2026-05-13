@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom';
 import { ROUTES } from './routes';
 import { App } from './App';
 import { lazy, Suspense } from 'react';
@@ -19,6 +19,7 @@ export function AppRouter() {
             <Route path={ROUTES.MY_PINS} element={<MyPinsPage />} />
             <Route path={ROUTES.ADMIN_PINS} element={<AdminPinsPage />} />
           </Route>
+          <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
         </Routes>
       </Suspense>
     </BrowserRouter>
